@@ -1,0 +1,11 @@
+# Python cache
+__pycache__/
+
+# Virtual environment
+venv/
+
+# SQLite DB files (if you don't want to track them)
+*.db
+
+# Media files (if temporary or auto-generated)
+*.mp3
