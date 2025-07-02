@@ -2,6 +2,9 @@ import asyncio
 from tts import speak
 from stt import listen
 from agent_brain import get_response
+from dotenv import load_dotenv
+
+load_dotenv()
 
 while True:
     query = listen()

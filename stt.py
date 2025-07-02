@@ -9,3 +9,12 @@ def listen():
             return r.recognize_google(audio)
         except:
             return "Sorry, I didn't understand that."
+
+def transcribe_wav(wav_path):
+    r = sr.Recognizer()
+    with sr.AudioFile(wav_path) as source:
+        audio = r.record(source)
+        try:
+            return r.recognize_google(audio)
+        except:
+            return "Sorry, I didn't understand that."

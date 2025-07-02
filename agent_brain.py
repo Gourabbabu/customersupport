@@ -1,24 +1,16 @@
-from llama_cpp import Llama
+import os
+from openai import OpenAI
+from dotenv import load_dotenv
 from db import save_complaint, check_complaint
 
-llm = Llama(
-    model_path="C:/Users/gourab/Desktop/gourab_jarvis/models/qwen2.5-coder-7b-instruct-q4_0.gguf",
-    n_ctx=2048,
-    n_threads=6,
-    verbose=False
+load_dotenv()
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
 )
 
-def local_chat(prompt):
-    response = llm(
-        f"<|system|>\nYou are a helpful electricity complaint assistant for Tripura.\n<|user|>\n{prompt}<|assistant|>",
-        stop=["<|user|>"],
-        temperature=0.7,
-        top_p=0.95,
-        max_tokens=512
-    )
-    return response["choices"][0]["text"].strip()
-
-def get_response(user_input):
+def get_response(user_input, site_url=None, site_title=None):
     # Filter irrelevant queries
     irrelevant_keywords = ["weather", "movie", "sports", "news"]
     if any(word in user_input.lower() for word in irrelevant_keywords):
@@ -38,7 +30,18 @@ def get_response(user_input):
         for loc in ["indranagar", "krishna nagar", "banamalipur"]:
             if loc in user_input.lower():
                 save_complaint(loc, "Power Outage")
-                return f"Complaint registered for power outage in {loc}. We’ll keep you updated."
+                return f"Complaint registered for power outage in {loc}. We'll keep you updated."
 
-    # Otherwise, ask the local model
-    return local_chat(user_input)
+    # Otherwise, use OpenRouter API
+    completion = client.chat.completions.create(
+        extra_headers={
+            "HTTP-Referer": site_url or "http://localhost", # Optional
+            "X-Title": site_title or "CustomerSupportAI", # Optional
+        },
+        extra_body={},
+        model="mistralai/mistral-small-3.2-24b-instruct:free",
+        messages=[
+            {"role": "user", "content": user_input}
+        ]
+    )
+    return completion.choices[0].message.content.strip()
