@@ -9,3 +9,5 @@ venv/
 
 # Media files (if temporary or auto-generated)
 *.mp3
+
+.env
